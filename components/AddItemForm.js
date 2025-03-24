@@ -9,6 +9,8 @@ export default function AddItemForm({ onAdd }) {
   const [mounted, setMounted] = useState(false);
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 2;
 
   useEffect(() => {
     setMounted(true);
@@ -30,6 +32,7 @@ export default function AddItemForm({ onAdd }) {
     setSubject('');
     setNotes('');
     setAiError('');
+    setRetryCount(0);
   };
 
   const generateNotes = async () => {
@@ -42,6 +45,9 @@ export default function AddItemForm({ onAdd }) {
     setAiError('');
     
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await fetch('/api/ai', {
         method: 'POST',
         headers: {
@@ -49,11 +55,15 @@ export default function AddItemForm({ onAdd }) {
         },
         body: JSON.stringify({
           prompt: `Create concise, informative notes about this topic: ${subject.trim()}. Include key points, definitions, and if applicable, examples.`
-        })
+        }),
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
-        throw new Error('Failed to generate notes');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to generate notes');
       }
       
       const data = await response.json();
@@ -61,12 +71,28 @@ export default function AddItemForm({ onAdd }) {
       
       if (aiNotes) {
         setNotes(aiNotes);
+        setRetryCount(0); // Reset retry count on success
       } else {
         setAiError('Could not generate notes. Please try again or add your own notes.');
       }
     } catch (error) {
       console.error('Error generating notes:', error);
-      setAiError('Failed to generate notes. Please try again later.');
+      
+      // Handle AbortError (timeout)
+      if (error.name === 'AbortError') {
+        setAiError('Request timed out. The AI server might be busy.');
+      } else {
+        setAiError(`Failed to generate notes: ${error.message || 'Unknown error'}`);
+      }
+      
+      // Auto-retry logic
+      if (retryCount < MAX_RETRIES) {
+        setAiError(`Retrying (${retryCount + 1}/${MAX_RETRIES})...`);
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => {
+          generateNotes();
+        }, 2000); // Wait 2 seconds before retrying
+      }
     } finally {
       setIsGeneratingNotes(false);
     }
