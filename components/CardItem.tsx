@@ -1,30 +1,47 @@
-import { StudyItem } from '@/types';
-import { formatDistance } from '@/lib/spaced-repetition';
+import { useRouter } from 'next/navigation';
+
+interface StudyItem {
+  id: string;
+  subject: string;
+  content?: string;
+  createdAt: string;
+  nextReviewDate: string;
+  reviewCount: number;
+}
 
 interface CardItemProps {
   item: StudyItem;
-  onDelete: (id: string) => void;
+  onClick?: () => void;
 }
 
-export default function CardItem({ item, onDelete }: CardItemProps) {
-  const nextReviewDate = new Date(item.nextReview);
-  const now = new Date();
-  const isReviewDue = nextReviewDate <= now;
+export default function CardItem({ item, onClick }: CardItemProps) {
+  const router = useRouter();
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (item.id) {
+      router.push(`/review/${item.id}`);
+    }
+  };
   
   return (
-    <div className={`border rounded-lg p-4 mb-4 ${isReviewDue ? 'border-red-500' : 'border-gray-200'}`}>
-      <p className="font-medium">{item.content}</p>
-      <div className="flex justify-between mt-2 text-sm text-gray-600">
-        <span>
-          Next review: {nextReviewDate.toLocaleDateString()} 
-          {isReviewDue && <span className="text-red-500 ml-2">Due now!</span>}
-        </span>
-        <button 
-          onClick={() => onDelete(item.id)} 
-          className="text-red-500"
-        >
-          Delete
-        </button>
+    <div 
+      className="bg-gray-800 rounded-lg p-4 transition-shadow hover:shadow-lg cursor-pointer"
+      onClick={handleClick}
+    >
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="text-lg font-semibold text-white">{item.subject}</h3>
+          {item.content && (
+            <p className="text-gray-400 mt-1 text-sm truncate">{item.content}</p>
+          )}
+        </div>
+        {item.nextReviewDate && (
+          <span className="text-sm text-gray-500">
+            {new Date(item.nextReviewDate).toLocaleDateString()}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getTodos, updateTodo } from '../lib/storage';
+import { getTodos } from '../lib/storage';
 
 const NOTIFIED_TODOS_KEY = 'cue_notified_todos';
 
@@ -12,7 +12,7 @@ export default function NotificationManager() {
   const getNotifiedTodos = () => {
     try {
       return JSON.parse(localStorage.getItem(NOTIFIED_TODOS_KEY) || '[]');
-    } catch (e) {
+    } catch (_) {
       return [];
     }
   };
@@ -23,8 +23,8 @@ export default function NotificationManager() {
       if (!notifiedTodos.includes(todoId)) {
         localStorage.setItem(NOTIFIED_TODOS_KEY, JSON.stringify([...notifiedTodos, todoId]));
       }
-    } catch (e) {
-      console.error('Failed to save notified todo', e);
+    } catch (_) {
+      console.error('Failed to save notified todo');
     }
   };
   
@@ -91,33 +91,23 @@ export default function NotificationManager() {
   };
   
   useEffect(() => {
-    const scheduleTodoNotifications = () => {
+    if (typeof window === 'undefined') return;
+    
+    if (Notification.permission) {
+      setPermission(Notification.permission);
+    }
+    
+    const interval = setInterval(() => {
+      if (permission !== 'granted') return;
+      
+      // Check for todos that need notifications
       const todos = getTodos();
-      const notifiedTodos = getNotifiedTodos();
-      const now = new Date();
-      
-      Object.values(pendingNotifications).forEach(timerId => {
-        clearTimeout(timerId);
-      });
-      setPendingNotifications({});
-      
       todos.forEach(todo => {
-        if (!todo.scheduledTime || todo.completed || notifiedTodos.includes(todo.id)) {
-          return;
-        }
+        if (!todo.scheduledTime || todo.completed) return;
         
-        const todoTime = new Date(todo.scheduledTime);
-        
-        
-        if (todoTime > now && todoTime.getTime() - now.getTime() < 24 * 60 * 60 * 1000) {
-          createScheduledNotification(todo);
-        }
+        createScheduledNotification(todo);
       });
-    };
-    
-    scheduleTodoNotifications();
-    
-    const interval = setInterval(scheduleTodoNotifications, 60 * 1000);
+    }, 60000); // Check every minute
     
     return () => {
       clearInterval(interval);
@@ -125,7 +115,7 @@ export default function NotificationManager() {
         clearTimeout(timerId);
       });
     };
-  }, [permission]);
+  }, [permission, pendingNotifications, createScheduledNotification]);
   
   if (permission !== 'granted') {
     return (

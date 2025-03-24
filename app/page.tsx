@@ -10,10 +10,29 @@ import NotificationManager from '../components/NotificationManager';
 import TaskAdvisor from '../components/TaskAdvisor';
 import Calendar from '../components/Calendar';
 
+// Define proper types for items and todos
+interface Item {
+  id: string;
+  subject: string;
+  content?: string;
+  createdAt: string;
+  nextReviewDate: string;
+  reviewCount: number;
+  lastReviewedAt?: string;
+}
+
+interface Todo {
+  id: string;
+  task: string;
+  completed: boolean;
+  createdAt: string;
+  scheduledTime?: string;
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'items' | 'todos'>('items');
-  const [items, setItems] = useState<any[]>([]);
-  const [todos, setTodos] = useState<any[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   
   useEffect(() => {
     const storedItems = getItems();
@@ -31,11 +50,11 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleItemsUpdate = (updatedItems: any[]) => {
+  const handleItemsUpdate = (updatedItems: Item[]) => {
     setItems(updatedItems);
   };
 
-  const handleTodosUpdate = (updatedTodos: any[]) => {
+  const handleTodosUpdate = (updatedTodos: Todo[]) => {
     setTodos(updatedTodos);
   };
   

@@ -130,7 +130,7 @@ export default function ItemsList({ items, onUpdate }) {
       {localItems.length === 0 && (
         <div className="text-center py-10">
           <p className="text-gray-400">
-            No items added yet. Add something you've learned to get started!
+            No items added yet. Add something you&apos;ve learned to get started!
           </p>
         </div>
       )}

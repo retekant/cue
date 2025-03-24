@@ -88,11 +88,6 @@ export default function Calendar({ items, todos }) {
     return compareDate < today;
   };
   
-  const safeSubstring = (text, start, end) => {
-    if (!text || typeof text !== 'string') return '';
-    return text.substring(start, end);
-  };
-  
   const monthYearString = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
   
   const getItemSubject = (item) => {

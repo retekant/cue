@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getTodos, updateTodo, deleteTodo } from '../lib/storage';
+import { useState } from 'react';
+import { updateTodo, deleteTodo } from '../lib/storage';
 
 export default function TodoList({ todos, onUpdate }) {
   const [showCompleted, setShowCompleted] = useState(false);
