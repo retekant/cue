@@ -6,7 +6,7 @@ import ReviewItem from '../../../components/ReviewItem';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-// Define Item interface
+
 interface Item {
   id: string;
   subject: string;

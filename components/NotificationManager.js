@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getTodos } from '../lib/storage';
 
 const NOTIFIED_TODOS_KEY = 'cue_notified_todos';
@@ -12,7 +12,7 @@ export default function NotificationManager() {
   const getNotifiedTodos = () => {
     try {
       return JSON.parse(localStorage.getItem(NOTIFIED_TODOS_KEY) || '[]');
-    } catch (_) {
+    } catch {
       return [];
     }
   };
@@ -23,72 +23,68 @@ export default function NotificationManager() {
       if (!notifiedTodos.includes(todoId)) {
         localStorage.setItem(NOTIFIED_TODOS_KEY, JSON.stringify([...notifiedTodos, todoId]));
       }
-    } catch (_) {
+    } catch {
       console.error('Failed to save notified todo');
     }
   };
   
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setPermission(Notification.permission);
-    }
-  }, []);
-  
   const requestPermission = async () => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (!('Notification' in window)) {
+      alert('This browser does not support desktop notifications');
+      return;
+    }
+    
+    try {
       const result = await Notification.requestPermission();
       setPermission(result);
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
     }
   };
   
-  const createScheduledNotification = (todo) => {
-    const todoTime = new Date(todo.scheduledTime);
+  const createScheduledNotification = useCallback((todo) => {
+    if (!todo.scheduledTime) return;
+    
+    const scheduledTime = new Date(todo.scheduledTime);
     const now = new Date();
     
-    const timeUntilNotification = todoTime.getTime() - now.getTime();
+    if (scheduledTime <= now) return;
     
-    if (timeUntilNotification <= 0) {
-      showNotification(todo);
-    } else {
-      const timerId = setTimeout(() => {
-        showNotification(todo);
-      }, timeUntilNotification);
-      
-      setPendingNotifications(prev => ({
-        ...prev,
-        [todo.id]: timerId
-      }));
+    const timeUntilNotification = scheduledTime.getTime() - now.getTime();
+    
+    if (timeUntilNotification > 24 * 60 * 60 * 1000) return;
+    
+    if (pendingNotifications[todo.id]) {
+      clearTimeout(pendingNotifications[todo.id]);
     }
-  };
-  
-  const showNotification = (todo) => {
-
-    setPendingNotifications(prev => {
-      const newPending = { ...prev };
-      delete newPending[todo.id];
-      return newPending;
-    });
     
-    saveNotifiedTodo(todo.id);
-    
-    if (permission === 'granted') {
-      new Notification('Cue: Task Reminder', {
-        body: `It's time for: ${todo.task}`,
-        icon: '/favicon.ico'
+    const timerId = setTimeout(() => {
+      if (Notification.permission !== 'granted') return;
+      
+      const notification = new Notification('Task Due', {
+        body: todo.task,
+        icon: '/icons/icon-192x192.png',
       });
       
-      const notification = document.createElement('div');
-      notification.className = 'notification';
-      notification.textContent = `Time for: ${todo.task}`;
-      document.body.appendChild(notification);
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
       
-      setTimeout(() => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      }, 5000);
-    }
-  };
+      saveNotifiedTodo(todo.id);
+      
+      setPendingNotifications(prev => {
+        const updated = { ...prev };
+        delete updated[todo.id];
+        return updated;
+      });
+    }, timeUntilNotification);
+    
+    setPendingNotifications(prev => ({
+      ...prev,
+      [todo.id]: timerId
+    }));
+  }, [pendingNotifications]);
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -100,14 +96,13 @@ export default function NotificationManager() {
     const interval = setInterval(() => {
       if (permission !== 'granted') return;
       
-      // Check for todos that need notifications
       const todos = getTodos();
       todos.forEach(todo => {
         if (!todo.scheduledTime || todo.completed) return;
         
         createScheduledNotification(todo);
       });
-    }, 60000); // Check every minute
+    }, 60000); 
     
     return () => {
       clearInterval(interval);
@@ -131,5 +126,5 @@ export default function NotificationManager() {
     );
   }
   
-  return null; // No UI when permission granted
+  return null;
 }

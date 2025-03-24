@@ -10,7 +10,7 @@ import NotificationManager from '../components/NotificationManager';
 import TaskAdvisor from '../components/TaskAdvisor';
 import Calendar from '../components/Calendar';
 
-// Define proper types for items and todos
+
 interface Item {
   id: string;
   subject: string;
