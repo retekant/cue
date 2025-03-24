@@ -43,7 +43,7 @@ export default function TodoList({ todos, onUpdate }) {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Todo List</h2>
+        <h2 className="text-xl font-semibold ml-2">Todo List</h2>
         <button 
           onClick={() => setShowCompleted(!showCompleted)}
           className="text-sm text-indigo-400 hover:text-indigo-300"

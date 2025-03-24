@@ -54,11 +54,11 @@ export default function ItemsList({ items, onUpdate }) {
   return (
     <div className="w-full max-w-4xl">
       {displayDueItems.length > 0 && (
-        <div className="mb-8">
+        <div className="mb-8 text-center">
           <h2 className="text-xl font-semibold mb-4 text-red-600 dark:text-red-400">
             Due for Review ({displayDueItems.length})
           </h2>
-          <ul className="space-y-2">
+          <ul className="space-y-2 text-start">
             {displayDueItems.map(item => (
               <li 
                 key={item.id} 
@@ -92,10 +92,10 @@ export default function ItemsList({ items, onUpdate }) {
 
       {displayUpcomingItems.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">
+          <h2 className="text-xl font-semibold mb-4 text-center">
             Upcoming ({displayUpcomingItems.length})
           </h2>
-          <ul className="space-y-2">
+          <ul className="space-y-2 text-start">
             {displayUpcomingItems.map(item => (
               <li 
                 key={item.id} 

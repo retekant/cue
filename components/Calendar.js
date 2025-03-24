@@ -107,15 +107,12 @@ export default function Calendar({ items, todos }) {
   return (
     <div className="w-full bg-gray-800 rounded-lg p-4 mb-6 shadow-md">
       <div className="flex justify-between items-center mb-4">
-        
-        
-        <h2 className="text-lg font-semibold ml-8">{monthYearString}</h2>
-        
-
+      <h2 className="text-lg font-semibold ml-8">{monthYearString}</h2>
         <div className="flex gap-2 mr-8">
+          
           <button 
             onClick={prevMonth}
-            className="p-2 rounded-full hover:bg-gray-500 bg-gray-700 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-700 bg-gray-700 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6"/>
@@ -123,15 +120,16 @@ export default function Calendar({ items, todos }) {
           </button>
           <button 
             onClick={nextMonth}
-            className="p-2 rounded-full hover:bg-gray-500 bg-gray-700  transition-colors"
+            className="p-2 rounded-full hover:bg-gray-700 bg-gray-700 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6"/>
             </svg>
-
           </button>
         </div>
 
+        
+        
       </div>
       
       <div className="grid grid-cols-7 gap-1 mb-2">
@@ -141,7 +139,6 @@ export default function Calendar({ items, todos }) {
           </div>
         ))}
       </div>
-      
       
       <div className="grid grid-cols-7 gap-1">
         {calendarDays.map((dayObj, index) => {
@@ -159,7 +156,7 @@ export default function Calendar({ items, todos }) {
           
           return (
             <div key={index} className={dayClasses}>
-              <div className="text-right text-sm text-white mb-1">
+              <div className="text-right text-sm mb-1">
                 {date.getDate()}
               </div>
               
@@ -171,8 +168,6 @@ export default function Calendar({ items, todos }) {
                       onClick={() => handleReviewItemClick(item.id)}
                       className="bg-blue-600 hover:bg-blue-500 rounded cursor-pointer"
                     >
-
-                      
                       <div className="px-1.5 py-1">
                         <span className="text-white font-medium block">
                           {getDisplayText(getItemSubject(item))}
