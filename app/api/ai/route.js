@@ -1,14 +1,30 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  baseURL: 'https://api.studio.nebius.com/v1/',
-  apiKey: process.env.NEBIUS_API_KEY,
-});
+let openai;
+try {
+  openai = new OpenAI({
+    baseURL: 'https://api.studio.nebius.com/v1/',
+    apiKey: process.env.NEBIUS_API_KEY || process.env.OPENAI_API_KEY || 'dummy_key',
+  });
+} catch (error) {
+  console.error('Error initializing OpenAI client:', error);
+}
 
 export async function POST(request) {
   try {
     const body = await request.json();
     const { prompt, type, todos } = body;
+
+    // Check if OpenAI client was successfully initialized
+    if (!openai) {
+      return new Response(JSON.stringify({ 
+        error: "AI services not available", 
+        message: "API key not configured" 
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     if (type === 'schedule') {
       const completion = await openai.chat.completions.create({

@@ -17,7 +17,7 @@ export default function NotificationManager() {
     }
   };
   
-  const saveNotifiedTodo = (todoId) => {
+  const saveNotifiedTodo = useCallback((todoId) => {
     try {
       const notifiedTodos = getNotifiedTodos();
       if (!notifiedTodos.includes(todoId)) {
@@ -26,7 +26,7 @@ export default function NotificationManager() {
     } catch {
       console.error('Failed to save notified todo');
     }
-  };
+  }, []);
   
   const requestPermission = async () => {
     if (!('Notification' in window)) {
