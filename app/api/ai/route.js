@@ -1,6 +1,4 @@
-import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-
 
 const openai = new OpenAI({
   baseURL: 'https://api.studio.nebius.com/v1/',
@@ -10,7 +8,7 @@ const openai = new OpenAI({
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { prompt, type } = body;
+    const { prompt, type, todos } = body;
 
     if (type === 'schedule') {
       const completion = await openai.chat.completions.create({
@@ -40,24 +38,72 @@ export async function POST(request) {
         if (jsonMatch) {
           try {
             const responseData = JSON.parse(jsonMatch[0]);
-            return NextResponse.json(responseData, { status: 200 });
+            return new Response(JSON.stringify(responseData), {
+              headers: { 'Content-Type': 'application/json' },
+            });
           } catch (e) {
             console.error("JSON parse error:", e);
+            return new Response(JSON.stringify({ days: 7, explanation: "Default schedule due to parsing error." }), {
+              headers: { 'Content-Type': 'application/json' },
+            });
           }
         }
         
         const daysMatch = jsonContent.match(/days["\s:]+(\d+)/i);
         const days = daysMatch ? parseInt(daysMatch[1]) : 7;
         
-        return NextResponse.json({ 
+        return new Response(JSON.stringify({ 
           days: days, 
           explanation: "Based on your assessment, this seems appropriate." 
-        }, { status: 200 });
-        
+        }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
       } catch (error) {
         console.error('Error parsing AI response:', error);
-        return NextResponse.json({ days: 7, explanation: "Default schedule due to parsing error." }, { status: 200 });
+        return new Response(JSON.stringify({ days: 7, explanation: "Default schedule due to parsing error." }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
+    } else if (type === 'advice') {
+      // Format the todos information for the AI
+      let todoInfo = "";
+      if (todos && todos.length > 0) {
+        todoInfo = "Here are the user's current tasks:\n";
+        todos.forEach((todo, index) => {
+          const status = todo.completed ? "Completed" : "Pending";
+          const time = todo.scheduledTime 
+            ? `Scheduled for: ${new Date(todo.scheduledTime).toLocaleString()}`
+            : "No scheduled time";
+          todoInfo += `${index + 1}. ${todo.task} - ${status} - ${time}\n`;
+        });
+      } else {
+        todoInfo = "The user currently has no tasks.";
+      }
+      
+      const completion = await openai.chat.completions.create({
+        model: "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        messages: [
+          {
+            role: "system",
+            content: `You are an AI assistant for a productivity and learning app. Your role is to provide thoughtful advice, 
+                     help with prioritization, and answer questions about productivity, task management, 
+                     learning strategies, and personal development. Be conversational, supportive and insightful.`
+          },
+          {
+            role: "user",
+            content: `${todoInfo}\n\nUser question: ${prompt}\n\nProvide a helpful, conversational response. 
+                     If the user is asking about task prioritization, offer specific advice based on their current tasks.
+                     If they're asking something else, provide helpful general advice while maintaining a friendly tone.`
+          }
+        ],
+        temperature: 0.7,
+      });
+      
+      return new Response(JSON.stringify({ 
+        content: completion.choices[0].message.content 
+      }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
     } else {
       const completion = await openai.chat.completions.create({
         temperature: 0.7,
@@ -74,13 +120,19 @@ export async function POST(request) {
         ]
       });
 
-      return NextResponse.json({ response: completion.choices[0].message.content }, { status: 200 });
+      return new Response(JSON.stringify({ 
+        response: completion.choices[0].message.content 
+      }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
   } catch (error) {
     console.error('Error in AI API route:', error);
-    return NextResponse.json(
-      { error: "Failed to get response", message: error.message },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify(
+      { error: "Failed to get response", message: error.message }
+    ), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

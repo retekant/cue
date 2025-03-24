@@ -5,6 +5,7 @@ import AddItemForm from '../components/AddItemForm';
 import ItemsList from '../components/ItemsList';
 import TodoForm from '../components/TodoForm';
 import TodoList from '../components/TodoList';
+import TaskAdvisor from '../components/TaskAdvisor';
 import NotificationManager from '../components/NotificationManager';
 import { getItems, getTodos } from '../lib/storage';
 
@@ -45,7 +46,7 @@ export default function Home() {
 
       <main className="flex flex-col items-center w-full max-w-5xl">
     
-        <div className="w-full  gap-6 mb-8">
+        <div className="w-full gap-6 mb-8">
           <div className="bg-gray-800 rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Review Cards</h2>
             <div className="flex justify-between mb-4">
@@ -69,10 +70,8 @@ export default function Home() {
               {dueItems.length > 0 ? 'Start Review' : 'No Cards Due'}
             </a>
           </div>
-          
   
         </div>
-        
 
         <div className="w-full border-b border-gray-700 mb-6">
           <div className="flex">
@@ -109,6 +108,7 @@ export default function Home() {
           
           {activeTab === 'todos' && (
             <div className="space-y-8">
+              <TaskAdvisor todos={todos} />
               <TodoForm onAdd={handleTodosUpdate} />
               <TodoList todos={todos} onUpdate={handleTodosUpdate} />
             </div>
