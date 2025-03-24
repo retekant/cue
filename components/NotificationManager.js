@@ -84,11 +84,7 @@ export default function NotificationManager() {
       ...prev,
       [todo.id]: timerId
     }));
-  }, [pendingNotifications]);
-
-  const handlePermissionGranted = useCallback(() => {
-    checkOverdueTodos(todos, saveNotifiedTodo);
-  }, [todos, saveNotifiedTodo]);
+  }, [pendingNotifications, saveNotifiedTodo]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

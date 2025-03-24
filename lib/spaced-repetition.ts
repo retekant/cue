@@ -1,20 +1,13 @@
+import { StudyItem } from '@/types';
 
-export function calculateNextReview(reviewCount, performance) {
+export function calculateNextReview(reviewCount: number, performance: number) {
+  const intervals = [1, 3, 7, 14, 30, 60, 120];
+  
+  let nextInterval: number;
+  
 
-  const intervals = [
-    1,     
-    3,     
-    7,     
-    14,    
-    30,     
-    60,     
-    120,    
-  ];
-  
-  let nextInterval;
-  
   if (performance <= 2) {
-    nextInterval = 1;
+    nextInterval = 1; 
   } else {
     const intervalIndex = Math.min(reviewCount, intervals.length - 1);
     nextInterval = intervals[intervalIndex];
@@ -25,7 +18,7 @@ export function calculateNextReview(reviewCount, performance) {
       nextInterval = Math.round(nextInterval * 0.8);
     }
   }
-  
+
   const nextReviewDate = new Date();
   nextReviewDate.setDate(nextReviewDate.getDate() + nextInterval);
   
@@ -35,7 +28,7 @@ export function calculateNextReview(reviewCount, performance) {
   };
 }
 
-export function getDueItems(items) {
+export function getDueItems(items: StudyItem[]) {
   const now = new Date();
   return items.filter(item => {
     const reviewDate = new Date(item.nextReviewDate);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getDueItems } from '../lib/spacedRepetition';
+import { getDueItems } from '../lib/spaced-repetition';
 import { deleteItem } from '../lib/storage';
 import Link from 'next/link';
 

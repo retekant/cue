@@ -20,9 +20,7 @@ export default function StudyCard({ item, onComplete, onSkip, onGetHint }: Study
   
   const handleRating = (quality: number) => {
     const updatedSpacingData = calculateNextReview(
-      item.easiness,
       item.repetitions,
-      item.interval,
       quality
     );
     

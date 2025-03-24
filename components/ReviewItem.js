@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { updateItem } from '../lib/storage';
 import { useRouter } from 'next/navigation';
-import { calculateNextReview } from '../lib/spacedRepetition';
+import { calculateNextReview } from '../lib/spaced-repetition';
 
 export default function ReviewItem({ item }) {
   const [showAnswer, setShowAnswer] = useState(false);
